@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   ArrowUpRight,
   CheckCircle2,
@@ -10,6 +11,7 @@ import {
   ShieldCheck,
   UserCheck,
 } from "lucide-react";
+import { legalPages, routeAliases, type LegalPageContent } from "./legalContent";
 
 const instagramUrl = "https://www.instagram.com/rotaylaa";
 const supportEmail = "destek@rotayla.com";
@@ -44,24 +46,55 @@ const steps = [
 ];
 
 const footerLinks = [
-  { label: "KVKK Aydınlatma Metni", href: "/kvkk" },
-  { label: "Gizlilik Politikası", href: "/gizlilik-politikasi" },
-  { label: "Kullanım Şartları", href: "/kullanim-sartlari" },
-  { label: "Destek", href: "/destek" },
+  { label: "Gizlilik Politikası", href: "/privacy" },
+  { label: "KVKK", href: "/kvkk" },
+  { label: "Kullanım Şartları", href: "/terms" },
+  { label: "Topluluk Kuralları", href: "/community" },
+  { label: "Destek", href: "/support" },
 ];
 
-function App() {
+function BrandLink() {
+  return (
+    <a className="brand-mark" href="/" aria-label="Rota ana sayfa">
+      <span className="brand-symbol" aria-hidden="true">
+        <MapPin size={22} strokeWidth={2.4} />
+        <Heart className="brand-heart" size={10} fill="currentColor" strokeWidth={2.2} />
+      </span>
+      <span>Rota</span>
+    </a>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="footer">
+      <a className="footer-brand" href="/">
+        <span className="brand-symbol small" aria-hidden="true">
+          <MapPin size={18} strokeWidth={2.4} />
+          <Heart className="brand-heart" size={8} fill="currentColor" strokeWidth={2.2} />
+        </span>
+        Rota
+      </a>
+      <nav className="footer-links" aria-label="Alt gezinme">
+        {footerLinks.map((link) => (
+          <a href={link.href} key={link.href}>
+            {link.label}
+          </a>
+        ))}
+        <a href={instagramUrl} target="_blank" rel="noreferrer">
+          Instagram
+        </a>
+      </nav>
+    </footer>
+  );
+}
+
+function HomePage() {
   return (
     <main className="site-shell">
       <section className="hero" aria-labelledby="hero-title">
         <header className="nav" aria-label="Ana gezinme">
-          <a className="brand-mark" href="https://rotayla.com" aria-label="Rota ana sayfa">
-            <span className="brand-symbol" aria-hidden="true">
-              <MapPin size={22} strokeWidth={2.4} />
-              <Heart className="brand-heart" size={10} fill="currentColor" strokeWidth={2.2} />
-            </span>
-            <span>Rota</span>
-          </a>
+          <BrandLink />
           <a className="nav-link" href={`mailto:${supportEmail}`}>
             <Mail size={18} aria-hidden="true" />
             Bize ulaş
@@ -204,27 +237,69 @@ function App() {
         </div>
       </section>
 
-      <footer className="footer">
-        <a className="footer-brand" href="https://rotayla.com">
-          <span className="brand-symbol small" aria-hidden="true">
-            <MapPin size={18} strokeWidth={2.4} />
-            <Heart className="brand-heart" size={8} fill="currentColor" strokeWidth={2.2} />
-          </span>
-          Rota
-        </a>
-        <nav className="footer-links" aria-label="Alt gezinme">
-          {footerLinks.map((link) => (
-            <a href={link.href} key={link.href}>
-              {link.label}
-            </a>
-          ))}
-          <a href={instagramUrl} target="_blank" rel="noreferrer">
-            Instagram
-          </a>
-        </nav>
-      </footer>
+      <Footer />
     </main>
   );
+}
+
+function LegalPage({ page }: { page: LegalPageContent }) {
+  return (
+    <main className="site-shell legal-shell">
+      <section className="legal-hero" aria-labelledby="legal-title">
+        <header className="nav legal-nav" aria-label="Ana gezinme">
+          <BrandLink />
+          <a className="legal-nav-link" href="/">
+            Ana sayfa
+          </a>
+        </header>
+        <div className="legal-hero-content">
+          <span className="eyebrow legal-eyebrow">Rota yasal bilgilendirme</span>
+          <h1 id="legal-title">{page.title}</h1>
+          <p>{page.intro}</p>
+        </div>
+      </section>
+
+      <section className="legal-content" aria-label={page.title}>
+        {page.sections.map((section) => (
+          <article className="legal-card" key={section.heading}>
+            <h2>{section.heading}</h2>
+            {section.body?.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+            {section.list ? (
+              <ul>
+                {section.list.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            ) : null}
+          </article>
+        ))}
+        <div className="legal-note">
+          <strong>İletişim:</strong>{" "}
+          <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
+        </div>
+      </section>
+
+      <Footer />
+    </main>
+  );
+}
+
+function App() {
+  const pathname = window.location.pathname.replace(/\/$/, "") || "/";
+  const normalizedPath = routeAliases[pathname] ?? pathname;
+  const legalPage = legalPages[normalizedPath as keyof typeof legalPages];
+
+  useEffect(() => {
+    document.title = legalPage
+      ? `${legalPage.title} | Rota`
+      : "Rota | Doğru insanlarla yolun kesişsin";
+  }, [legalPage]);
+
+  if (legalPage) {
+    return <LegalPage page={legalPage} />;
+  }
+
+  return <HomePage />;
 }
 
 export default App;
