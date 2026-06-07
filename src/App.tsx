@@ -1,65 +1,73 @@
-import { useEffect } from "react";
 import {
-  ArrowUpRight,
-  CheckCircle2,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import {
+  Apple,
   Heart,
-  HeartHandshake,
-  Instagram,
-  Mail,
   MapPin,
   MessageCircle,
-  ShieldCheck,
-  UserCheck,
+  Play,
+  Send,
 } from "lucide-react";
 import { legalPages, routeAliases, type LegalPageContent } from "./legalContent";
 
-const instagramUrl = "https://www.instagram.com/rotaylaa";
 const supportEmail = "destek@rotayla.com";
+const rotaIconSrc = "/rota-icon.png";
 
-const reasons = [
-  {
-    title: "Güvenli tanışma",
-    description: "Rota, tanışma sürecini daha kontrollü ve güven veren bir zeminde tasarlar.",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Saygılı iletişim",
-    description: "İletişimin merkezinde netlik, nezaket ve karşılıklı sınırlar yer alır.",
-    icon: HeartHandshake,
-  },
-  {
-    title: "Karşılıklı eşleşme",
-    description: "Sohbet yalnızca iki taraf da tanışmak istediğinde başlar.",
-    icon: MessageCircle,
-  },
-  {
-    title: "Modern profil deneyimi",
-    description: "Kendini sade, anlaşılır ve güven veren bir profille ifade edersin.",
-    icon: UserCheck,
-  },
+const navLinks = [
+  { label: "Güvenlik", href: "#safety" },
+  { label: "Destek", href: "/support" },
+  { label: "Yasal", href: "/privacy" },
 ];
 
 const steps = [
-  "Profilini oluştur",
-  "Sana uygun kişileri keşfet",
-  "Karşılıklı eşleşince sohbet et",
+  {
+    title: "Paylaş",
+    description: "Durumunu ve seni anlatan küçük anları sade biçimde paylaş.",
+  },
+  {
+    title: "Keşfet",
+    description: "Ana akışta paylaşımları ve profilleri kaydırma baskısı olmadan incele.",
+  },
+  {
+    title: "Tanışmak istiyorum gönder",
+    description: "İlgini çeken kişiye net ve saygılı bir tanışma isteği ilet.",
+  },
+  {
+    title: "Sohbet",
+    description: "Karşılıklı kabul sonrası konuşma daha kontrollü ve doğal başlasın.",
+  },
 ];
 
 const footerLinks = [
   { label: "Gizlilik Politikası", href: "/privacy" },
   { label: "KVKK", href: "/kvkk" },
   { label: "Kullanım Şartları", href: "/terms" },
-  { label: "Topluluk Kuralları", href: "/community" },
   { label: "Destek", href: "/support" },
+  { label: "Hesap Silme", href: "/delete-account" },
 ];
+
+const floatingKinds = ["heart", "pin", "chat", "logo", "profile", "phone", "message"] as const;
+
+type FloatingKind = (typeof floatingKinds)[number];
+
+type FloatingObject = {
+  id: number;
+  kind: FloatingKind;
+  rotate: number;
+  x: number;
+  y: number;
+};
 
 function BrandLink() {
   return (
     <a className="brand-mark" href="/" aria-label="Rota ana sayfa">
-      <span className="brand-symbol" aria-hidden="true">
-        <MapPin size={22} strokeWidth={2.4} />
-        <Heart className="brand-heart" size={10} fill="currentColor" strokeWidth={2.2} />
-      </span>
+      <img className="brand-icon" src={rotaIconSrc} alt="" width="44" height="44" />
       <span>Rota</span>
     </a>
   );
@@ -68,173 +76,213 @@ function BrandLink() {
 function Footer() {
   return (
     <footer className="footer">
-      <a className="footer-brand" href="/">
-        <span className="brand-symbol small" aria-hidden="true">
-          <MapPin size={18} strokeWidth={2.4} />
-          <Heart className="brand-heart" size={8} fill="currentColor" strokeWidth={2.2} />
-        </span>
-        Rota
-      </a>
-      <nav className="footer-links" aria-label="Alt gezinme">
-        {footerLinks.map((link) => (
-          <a href={link.href} key={link.href}>
-            {link.label}
+      <div className="footer-grid">
+        <div className="footer-brand-block">
+          <a className="footer-brand" href="/">
+            <img className="brand-icon small" src={rotaIconSrc} alt="" width="34" height="34" />
+            Rota
           </a>
-        ))}
-        <a href={instagramUrl} target="_blank" rel="noreferrer">
-          Instagram
-        </a>
-      </nav>
+          <p>Doğru insanlarla yolun kesişsin.</p>
+        </div>
+        <nav className="footer-links" aria-label="Alt gezinme">
+          {footerLinks.map((link) => (
+            <a href={link.href} key={link.href}>
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      </div>
     </footer>
   );
 }
 
-function HomePage() {
+function FloatingHeroObject({ item }: { item: FloatingObject }) {
+  const style = {
+    left: `${item.x}px`,
+    top: `${item.y}px`,
+    "--rotate": `${item.rotate}deg`,
+  } as CSSProperties;
+
+  if (item.kind === "profile") {
+    return (
+      <span className="floating-object floating-profile" style={style}>
+        <i />
+        <b />
+        <b />
+      </span>
+    );
+  }
+
+  if (item.kind === "phone") {
+    return (
+      <span className="floating-object floating-phone" style={style}>
+        <i />
+        <b />
+        <b />
+      </span>
+    );
+  }
+
+  if (item.kind === "message") {
+    return (
+      <span className="floating-object floating-message" style={style}>
+        Tanışmak istiyorum
+      </span>
+    );
+  }
+
+  if (item.kind === "logo") {
+    return (
+      <span className="floating-object floating-logo" style={style}>
+        <img src={rotaIconSrc} alt="" />
+      </span>
+    );
+  }
+
+  const Icon = item.kind === "pin" ? MapPin : item.kind === "chat" ? MessageCircle : Heart;
+
   return (
-    <main className="site-shell">
-      <section className="hero" aria-labelledby="hero-title">
-        <header className="nav" aria-label="Ana gezinme">
+    <span className={`floating-object floating-icon floating-${item.kind}`} style={style}>
+      <Icon size={28} fill={item.kind === "heart" ? "currentColor" : "none"} strokeWidth={2.2} />
+    </span>
+  );
+}
+
+function HomePage() {
+  const [floatingObjects, setFloatingObjects] = useState<FloatingObject[]>([]);
+  const objectIdRef = useRef(0);
+  const lastMoveRef = useRef(0);
+  const timeoutsRef = useRef<number[]>([]);
+
+  useEffect(() => {
+    return () => {
+      timeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    };
+  }, []);
+
+  const spawnObject = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    const target = event.target as HTMLElement;
+
+    if (target.closest("a, button")) {
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const offsetX = Math.random() * 96 - 48;
+    const offsetY = Math.random() * 82 - 41;
+    const x = Math.min(Math.max(event.clientX - rect.left + offsetX, 44), rect.width - 44);
+    const y = Math.min(Math.max(event.clientY - rect.top + offsetY, 76), rect.height - 70);
+    const kind = floatingKinds[objectIdRef.current % floatingKinds.length];
+    const id = objectIdRef.current + 1;
+    const rotate = Math.round(Math.random() * 22 - 11);
+
+    objectIdRef.current = id;
+    setFloatingObjects((items) => [...items.slice(-4), { id, kind, rotate, x, y }]);
+
+    const timeoutId = window.setTimeout(() => {
+      setFloatingObjects((items) => items.filter((item) => item.id !== id));
+    }, 2700);
+
+    timeoutsRef.current.push(timeoutId);
+  }, []);
+
+  const handleHeroPointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      if (event.pointerType !== "mouse") {
+        return;
+      }
+
+      const now = window.performance.now();
+
+      if (now - lastMoveRef.current < 460) {
+        return;
+      }
+
+      lastMoveRef.current = now;
+      spawnObject(event);
+    },
+    [spawnObject],
+  );
+
+  return (
+    <main className="site-shell home-shell">
+      <section
+        className="hero"
+        aria-labelledby="hero-title"
+        onPointerDown={spawnObject}
+        onPointerMove={handleHeroPointerMove}
+      >
+        <div className="floating-layer" aria-hidden="true">
+          {floatingObjects.map((item) => (
+            <FloatingHeroObject item={item} key={item.id} />
+          ))}
+        </div>
+
+        <header className="nav home-nav" aria-label="Ana gezinme">
           <BrandLink />
-          <a className="nav-link" href={`mailto:${supportEmail}`}>
-            <Mail size={18} aria-hidden="true" />
-            Bize ulaş
-          </a>
+          <nav className="header-links" aria-label="Üst menü">
+            {navLinks.map((link) => (
+              <a href={link.href} key={link.href}>
+                {link.label}
+              </a>
+            ))}
+          </nav>
         </header>
 
-        <div className="hero-grid">
-          <div className="hero-copy">
-            <span className="eyebrow">
-              <CheckCircle2 size={16} aria-hidden="true" />
-              Yakında iOS ve Android’de
-            </span>
-            <h1 id="hero-title">Doğru insanlarla yolun kesişsin.</h1>
-            <p className="hero-description">
-              Rota, güvenli ve saygılı tanışma deneyimi için hazırlanıyor.
-            </p>
-            <div className="hero-actions">
-              <a className="primary-button" href={instagramUrl} target="_blank" rel="noreferrer">
-                <Instagram size={20} aria-hidden="true" />
-                Instagram'da takip et
-                <ArrowUpRight size={18} aria-hidden="true" />
-              </a>
-              <a className="ghost-button" href={`mailto:${supportEmail}`}>
-                Bize ulaş
-              </a>
-            </div>
-            <p className="store-note">Yakında App Store ve Google Play’de.</p>
+        <div className="hero-center">
+          <span className="hero-logo" aria-label="Rota">
+            <img className="brand-icon hero-brand-icon" src={rotaIconSrc} alt="" width="64" height="64" />
+            Rota
+          </span>
+          <h1 id="hero-title">
+            <span>Doğru insanlarla,</span>
+            {" "}
+            <span>yolun kesişsin.</span>
+          </h1>
+          <div className="hero-actions" id="app-store">
+            <a className="store-button" href="#app-store">
+              <Apple size={22} aria-hidden="true" />
+              App Store’da Yakında
+            </a>
+            <a className="store-button" href="#google-play" id="google-play">
+              <Play size={21} aria-hidden="true" />
+              Google Play’de Yakında
+            </a>
           </div>
-
-          <div className="abstract-visual" aria-hidden="true">
-            <div className="route-line route-line-one" />
-            <div className="route-line route-line-two" />
-            <div className="route-node node-heart">
-              <Heart size={22} />
-            </div>
-            <div className="route-node node-pin">
-              <MapPin size={23} />
-            </div>
-            <div className="route-node node-chat">
-              <MessageCircle size={22} />
-            </div>
-            <div className="route-logo">
-              <span>R</span>
-            </div>
-            <div className="route-caption">
-              <span>Güvenli</span>
-              <span>Saygılı</span>
-              <span>Modern</span>
-            </div>
-          </div>
+          <p className="hero-hint">Keşfetmek için ekrana dokun.</p>
         </div>
       </section>
 
-      <section className="section intro-section" aria-labelledby="about-title">
-        <div className="section-kicker">Rota nedir?</div>
-        <div className="split">
-          <h2 id="about-title">Yeni nesil sosyal tanışma deneyimi.</h2>
-          <p>
-            Rota, doğru insanlarla tanışmayı daha güvenli, saygılı ve modern hale
-            getirmek için geliştirilen yeni nesil bir sosyal tanışma uygulamasıdır.
-          </p>
-        </div>
-      </section>
-
-      <section className="section reasons-section" aria-labelledby="reasons-title">
-        <div className="section-heading">
-          <div>
-            <div className="section-kicker">Neden Rota?</div>
-            <h2 id="reasons-title">Sade, dengeli ve güven veren.</h2>
-          </div>
-          <p>
-            Rota; arkadaşlık ve tanışma deneyimini daha sakin, saygılı ve anlaşılır
-            bir akışla sunmak için hazırlanıyor.
-          </p>
-        </div>
-
-        <div className="feature-grid">
-          {reasons.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <article className="feature-card" key={item.title}>
-                <span className="feature-icon">
-                  <Icon size={24} aria-hidden="true" />
-                </span>
-                <h3>{item.title}</h3>
-                <p>{item.description}</p>
-              </article>
-            );
-          })}
-        </div>
+      <section className="section intro-section" id="about" aria-labelledby="about-title">
+        <span className="section-kicker">Rota nedir?</span>
+        <h2 id="about-title">Kaydırmadan daha doğal bir tanışma akışı.</h2>
+        <p>
+          Rota’da paylaşımları keşfet, profilleri incele, ilgini çeken kişiye
+          “Tanışmak istiyorum” gönder. Karşılıklı kabul sonrası sohbet başlasın.
+        </p>
       </section>
 
       <section className="section steps-section" aria-labelledby="steps-title">
-        <div className="section-kicker">Nasıl çalışır?</div>
-        <div className="steps-grid">
-          <div>
-            <h2 id="steps-title">Üç adımda daha doğru tanışmalar.</h2>
-            <p>
-              Rota, karmaşık akışlar yerine basit ve güven veren bir tanışma yolu
-              sunmayı hedefler.
-            </p>
-          </div>
-          <ol className="step-list">
-            {steps.map((step, index) => (
-              <li key={step}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{step}</strong>
-              </li>
-            ))}
-          </ol>
+        <div className="section-heading">
+          <span className="section-kicker">Nasıl çalışır?</span>
+          <h2 id="steps-title">Dört sade adım.</h2>
+        </div>
+
+        <div className="feature-grid">
+          {steps.map((item, index) => (
+            <article className="feature-card" key={item.title}>
+              <span className="step-number">{String(index + 1).padStart(2, "0")}</span>
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section className="coming-soon" aria-labelledby="coming-title">
-        <div>
-          <div className="section-kicker">Yakında geliyor</div>
-          <h2 id="coming-title">Rota çok yakında yayında.</h2>
-          <p>Lansmanı kaçırmamak için bizi Instagram'da takip et.</p>
-        </div>
-        <a className="secondary-button" href={instagramUrl} target="_blank" rel="noreferrer">
-          <Instagram size={20} aria-hidden="true" />
-          @rotaylaa
-        </a>
-      </section>
-
-      <section className="section contact-section" aria-labelledby="contact-title">
-        <div className="contact-card">
-          <div>
-            <div className="section-kicker">İletişim</div>
-            <h2 id="contact-title">Destek ve KVKK başvuruları</h2>
-            <p>
-              Destek ve KVKK başvuruları için:{" "}
-              <a href={`mailto:${supportEmail}`}>{supportEmail}</a>
-            </p>
-          </div>
-          <a className="icon-button" href={`mailto:${supportEmail}`} aria-label="E-posta gönder">
-            <Mail size={22} aria-hidden="true" />
-          </a>
-        </div>
+      <section className="section safety-section" id="safety" aria-labelledby="safety-title">
+        <span className="section-kicker">Güvenlik</span>
+        <h2 id="safety-title">Kontrol sende.</h2>
+        <p>Şikayet et, engelle, hesabını ve verilerini yönet.</p>
       </section>
 
       <Footer />
@@ -292,7 +340,7 @@ function App() {
   useEffect(() => {
     document.title = legalPage
       ? `${legalPage.title} | Rota`
-      : "Rota | Doğru insanlarla yolun kesişsin";
+      : "Rota - Gerçek Tanışmalar";
   }, [legalPage]);
 
   if (legalPage) {

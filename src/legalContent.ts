@@ -205,6 +205,32 @@ export const legalPages: Record<string, LegalPageContent> = {
       },
     ],
   },
+  "/delete-account": {
+    title: "Hesap Silme",
+    intro:
+      "Rota hesabınızı ve hesabınızla ilişkili kişisel verileri silmek için destek ekibimize başvurabilirsiniz.",
+    sections: [
+      {
+        heading: "Hesap silme talebi",
+        body: [
+          "Hesabınızın silinmesini istemek için destek@rotayla.com adresine, hesabınızla ilişkili e-posta adresinden talep gönderebilirsiniz.",
+          "Talebiniz doğrulandıktan sonra hesap kapatma ve ilgili veri silme süreci başlatılır.",
+        ],
+      },
+      {
+        heading: "Silinebilecek veriler",
+        body: [
+          "Profil bilgileri, fotoğraflar, eşleşme verileri, mesajlaşma kayıtları ve uygulama kullanım verileri mevzuatın izin verdiği ölçüde silinir veya anonim hale getirilir.",
+        ],
+      },
+      {
+        heading: "Saklama yükümlülükleri",
+        body: [
+          "Yasal yükümlülükler, güvenlik incelemeleri veya ödeme/abonelik kayıtları nedeniyle bazı veriler sınırlı süreyle saklanabilir.",
+        ],
+      },
+    ],
+  },
 };
 
 export const routeAliases: Record<string, string> = {
