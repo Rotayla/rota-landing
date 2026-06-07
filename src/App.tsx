@@ -67,7 +67,7 @@ type FloatingObject = {
 function BrandLink() {
   return (
     <a className="brand-mark" href="/" aria-label="Rota ana sayfa">
-      <img className="brand-icon" src={rotaIconSrc} alt="" width="44" height="44" />
+      <img className="brand-icon" src={rotaIconSrc} alt="" width="32" height="32" />
       <span>Rota</span>
     </a>
   );
@@ -79,7 +79,6 @@ function Footer() {
       <div className="footer-grid">
         <div className="footer-brand-block">
           <a className="footer-brand" href="/">
-            <img className="brand-icon small" src={rotaIconSrc} alt="" width="34" height="34" />
             Rota
           </a>
           <p>Doğru insanlarla yolun kesişsin.</p>
@@ -230,10 +229,6 @@ function HomePage() {
         </header>
 
         <div className="hero-center">
-          <span className="hero-logo" aria-label="Rota">
-            <img className="brand-icon hero-brand-icon" src={rotaIconSrc} alt="" width="64" height="64" />
-            Rota
-          </span>
           <h1 id="hero-title">
             <span>Doğru insanlarla,</span>
             {" "}
